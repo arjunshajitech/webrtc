@@ -117,12 +117,12 @@ func ConfigureTWCCSender(mediaEngine *MediaEngine, interceptorRegistry *intercep
 		return err
 	}
 
-	generator, err := twcc.NewSenderInterceptor()
-	if err != nil {
-		return err
-	}
-
-	interceptorRegistry.Add(generator)
+	//generator, err := twcc.NewSenderInterceptor()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//interceptorRegistry.Add(generator)
 
 	return nil
 }

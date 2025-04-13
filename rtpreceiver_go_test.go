@@ -79,7 +79,7 @@ func TestSetRTPParameters(t *testing.T) {
 func TestReceiveError(t *testing.T) {
 	api := NewAPI()
 
-	dtlsTransport, err := api.NewDTLSTransport(nil, nil)
+	dtlsTransport, err := api.NewDTLSTransport(nil, nil, nil)
 	assert.NoError(t, err)
 
 	rtpReceiver, err := api.NewRTPReceiver(RTPCodecTypeVideo, dtlsTransport)

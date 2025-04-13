@@ -64,7 +64,7 @@ func main() {
 	ice := api.NewICETransport(gatherer)
 
 	// Construct the DTLS transport
-	dtls, err := api.NewDTLSTransport(ice, nil)
+	dtls, err := api.NewDTLSTransport(ice, nil, nil)
 	if err != nil {
 		panic(err)
 	}

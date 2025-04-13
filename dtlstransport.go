@@ -14,6 +14,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/pion/interceptor/pkg/twcc"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -58,6 +59,8 @@ type DTLSTransport struct {
 
 	api *API
 	log logging.LeveledLogger
+
+	twccProcessor twcc.CustomTWCCProcessor
 }
 
 type simulcastStreamPair struct {
@@ -68,14 +71,15 @@ type simulcastStreamPair struct {
 // NewDTLSTransport creates a new DTLSTransport.
 // This constructor is part of the ORTC API. It is not
 // meant to be used together with the basic WebRTC API.
-func (api *API) NewDTLSTransport(transport *ICETransport, certificates []Certificate) (*DTLSTransport, error) {
+func (api *API) NewDTLSTransport(transport *ICETransport, certificates []Certificate, processor twcc.CustomTWCCProcessor) (*DTLSTransport, error) {
 	trans := &DTLSTransport{
-		iceTransport: transport,
-		api:          api,
-		state:        DTLSTransportStateNew,
-		dtlsMatcher:  mux.MatchDTLS,
-		srtpReady:    make(chan struct{}),
-		log:          api.settingEngine.LoggerFactory.NewLogger("DTLSTransport"),
+		iceTransport:  transport,
+		api:           api,
+		state:         DTLSTransportStateNew,
+		dtlsMatcher:   mux.MatchDTLS,
+		srtpReady:     make(chan struct{}),
+		log:           api.settingEngine.LoggerFactory.NewLogger("DTLSTransport"),
+		twccProcessor: processor,
 	}
 
 	if len(certificates) > 0 {
@@ -553,7 +557,9 @@ func (t *DTLSTransport) streamsForSSRC(
 	rtpReader := interceptor.RTPReaderFunc(
 		func(in []byte, a interceptor.Attributes) (n int, attributes interceptor.Attributes, err error) {
 			n, err = rtpReadStream.Read(in)
-
+			if err == nil {
+				_, _ = t.twccProcessor.Process(n, in, streamInfo.RTPHeaderExtensions)
+			}
 			return n, a, err
 		},
 	)

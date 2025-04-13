@@ -12,6 +12,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"github.com/pion/interceptor/pkg/twcc"
 	"io"
 	"strconv"
 	"strings"
@@ -123,6 +124,7 @@ func (api *API) NewPeerConnection(configuration Configuration) (*PeerConnection,
 			RTCPMuxPolicy:        RTCPMuxPolicyRequire,
 			Certificates:         []Certificate{},
 			ICECandidatePoolSize: 0,
+			TWCCProcessor:        twcc.NoopTWCCProcessor{},
 		},
 		isClosed:                                &atomicBool{},
 		isCloseDone:                             make(chan struct{}),
@@ -172,7 +174,7 @@ func (api *API) NewPeerConnection(configuration Configuration) (*PeerConnection,
 	pc.iceTransport = iceTransport
 
 	// Create the DTLS transport
-	dtlsTransport, err := pc.api.NewDTLSTransport(pc.iceTransport, pc.configuration.Certificates)
+	dtlsTransport, err := pc.api.NewDTLSTransport(pc.iceTransport, pc.configuration.Certificates, pc.configuration.TWCCProcessor)
 	if err != nil {
 		return nil, err
 	}
@@ -192,6 +194,12 @@ func (api *API) NewPeerConnection(configuration Configuration) (*PeerConnection,
 	})
 
 	pc.interceptorRTCPWriter = pc.api.interceptor.BindRTCPWriter(interceptor.RTCPWriterFunc(pc.writeRTCP))
+	tp := pc.configuration.TWCCProcessor.TWCCProcessor()
+	if tp != nil {
+		tp.BindRTCPWriter(interceptor.RTCPWriterFunc(pc.writeRTCP))
+	} else {
+		// Here when Noop
+	}
 
 	return pc, nil
 }
@@ -204,6 +212,10 @@ func (api *API) NewPeerConnection(configuration Configuration) (*PeerConnection,
 func (pc *PeerConnection) initConfiguration(configuration Configuration) error { //nolint:cyclop
 	if configuration.PeerIdentity != "" {
 		pc.configuration.PeerIdentity = configuration.PeerIdentity
+	}
+
+	if configuration.TWCCProcessor != nil {
+		pc.configuration.TWCCProcessor = configuration.TWCCProcessor
 	}
 
 	// https://www.w3.org/TR/webrtc/#constructor (step #3)
