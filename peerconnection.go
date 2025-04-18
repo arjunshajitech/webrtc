@@ -124,7 +124,7 @@ func (api *API) NewPeerConnection(configuration Configuration) (*PeerConnection,
 			RTCPMuxPolicy:        RTCPMuxPolicyRequire,
 			Certificates:         []Certificate{},
 			ICECandidatePoolSize: 0,
-			TWCCProcessor:        twcc.NoopTWCCProcessor{},
+			TWCCProcessor:        &twcc.NoopTWCCProcessor{},
 		},
 		isClosed:                                &atomicBool{},
 		isCloseDone:                             make(chan struct{}),
@@ -194,11 +194,10 @@ func (api *API) NewPeerConnection(configuration Configuration) (*PeerConnection,
 	})
 
 	pc.interceptorRTCPWriter = pc.api.interceptor.BindRTCPWriter(interceptor.RTCPWriterFunc(pc.writeRTCP))
-	tp := pc.configuration.TWCCProcessor.TWCCProcessor()
+	tp := pc.configuration.TWCCProcessor.Processor()
+	// Nil for Noop
 	if tp != nil {
-		tp.BindRTCPWriter(interceptor.RTCPWriterFunc(pc.writeRTCP))
-	} else {
-		// Here when Noop
+		tp.BindTWCCRTCPWriter(pc.interceptorRTCPWriter)
 	}
 
 	return pc, nil

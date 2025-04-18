@@ -3,6 +3,7 @@ github.com/arjunshajitech/interceptor v0.0.0-20250312123050-c9d476a510a1/go.mod 
 github.com/arjunshajitech/interceptor v0.0.0-20250313131735-36472c6290cb h1:qu70eQhcmCvNkrzYeVTDXS1RGmt14Qu5vo+sQH+q16w=
 github.com/arjunshajitech/interceptor v0.0.0-20250313131735-36472c6290cb/go.mod h1:tYRp/5W3dEUrbYzdB49i4WictfIG2eEOSoFCb+oJAHY=
 github.com/arjunshajitech/interceptor v0.0.0-20250413105334-aef607094f1a/go.mod h1:uSLcuVzn4CBUX1+N++8NcP5eQWykd1mbFV6QLIfxvdc=
+github.com/arjunshajitech/interceptor v0.0.0-20250418055655-30d438bf26a0/go.mod h1:uSLcuVzn4CBUX1+N++8NcP5eQWykd1mbFV6QLIfxvdc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
