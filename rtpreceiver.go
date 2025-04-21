@@ -512,12 +512,12 @@ func (r *RTPReceiver) receiveForRtx(
 				r.rtxPool.Put(b) // nolint:staticcheck
 				return
 			}
-			i, attributes, err = track.repairProcessor.Process(i, b, attributes)
-			if err != nil {
-				r.rtxPool.Put(b) // nolint:staticcheck
-
-				return
-			}
+			//i, attributes, err = track.repairProcessor.Process(i, b, attributes)
+			//if err != nil {
+			//	r.rtxPool.Put(b) // nolint:staticcheck
+			//
+			//	return
+			//}
 
 			// RTX packets have a different payload format. Move the OSN in the payload to the RTP header and rewrite the
 			// payload type and SSRC, so that we can return RTX packets to the caller 'transparently' i.e. in the same format
