@@ -35,4 +35,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/pion/interceptor v0.1.37 => github.com/arjunshajitech/interceptor v0.0.0-20250421100713-59330df74c0b
+replace github.com/pion/interceptor v0.1.37 => github.com/arjunshajitech/interceptor v0.0.0-20250422051424-48dc01de602b
