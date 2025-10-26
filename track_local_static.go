@@ -356,6 +356,65 @@ func (s *TrackLocalStaticSample) WriteSample(sample media.Sample) error {
 	return util.FlattenErrs(writeErrs)
 }
 
+func (s *TrackLocalStaticSample) AudioPackets(sample media.Sample) []*rtp.Packet {
+	s.rtpTrack.mu.RLock()
+	packetizer := s.packetizer
+	clockRate := s.clockRate
+	s.rtpTrack.mu.RUnlock()
+
+	if packetizer == nil {
+		s.rtpTrack.mu.RLock()
+		payloadHandler := s.rtpTrack.payloader
+		if payloadHandler == nil {
+			payloadHandler = payloaderForCodec
+		}
+
+		payloader, err := payloadHandler(RTPCodecCapability{
+			MimeType:     MimeTypeOpus,
+			ClockRate:    48000,
+			Channels:     2,
+			SDPFmtpLine:  "",
+			RTCPFeedback: nil,
+		})
+		if err != nil {
+			return nil
+		}
+
+		s.sequencer = rtp.NewRandomSequencer()
+
+		options := []rtp.PacketizerOption{}
+
+		if s.rtpTrack.rtpTimestamp != nil {
+			options = append(options, rtp.WithTimestamp(*s.rtpTrack.rtpTimestamp))
+		}
+
+		s.packetizer = rtp.NewPacketizerWithOptions(
+			outboundMTU,
+			payloader,
+			s.sequencer,
+			48000,
+			options...,
+		)
+
+		s.clockRate = float64(48000)
+		packetizer = s.packetizer
+		clockRate = s.clockRate
+		s.rtpTrack.mu.RUnlock()
+	}
+
+	// skip packets by the number of previously dropped packets
+	for i := uint16(0); i < sample.PrevDroppedPackets; i++ {
+		s.sequencer.NextSequenceNumber()
+	}
+
+	samples := uint32(sample.Duration.Seconds() * clockRate)
+	if sample.PrevDroppedPackets > 0 {
+		packetizer.SkipSamples(samples * uint32(sample.PrevDroppedPackets))
+	}
+
+	return packetizer.Packetize(sample.Data, samples)
+}
+
 // GeneratePadding writes padding-only samples to the TrackLocalStaticSample
 // If one PeerConnection fails the packets will still be sent to
 // all PeerConnections. The error message will contain the ID of the failed
